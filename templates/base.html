@@ -9,18 +9,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #0f1215;
-            color: #f8fafc;
+            background-color: #0b1311;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
         }
         .sidebar {
             width: 260px;
-            background-color: #161b22;
-            border-right: 1px solid #21262d;
+            background-color: #060d0b;
+            border-right: 1px solid #1a2e28;
             min-height: 100vh;
         }
         .sidebar .nav-link {
-            color: #8b949e;
+            color: #94a3b8;
             padding: 10px 16px;
             border-radius: 8px;
             margin-bottom: 4px;
@@ -28,21 +29,32 @@
         }
         .sidebar .nav-link:hover {
             color: #ffffff;
-            background-color: #21262d;
+            background-color: rgba(43, 168, 112, 0.15);
         }
         .sidebar .nav-link.active {
             color: #ffffff !important;
-            background-color: #0d6efd !important;
+            background-color: #2ba870 !important;
         }
         .content-wrapper {
             flex: 1;
-            background-color: #0f1215;
+            background-color: #0b1311;
             overflow-y: auto;
         }
         .card {
-            background-color: #161b22 !important;
-            border: 1px solid #21262d !important;
-            border-radius: 10px;
+            background-color: #101c18 !important;
+            border: 1px solid #1a2e28 !important;
+            border-radius: 12px;
+        }
+        .table-dark {
+            --bs-table-bg: #101c18;
+            --bs-table-border-color: #1a2e28;
+        }
+        .btn-success {
+            background-color: #2ba870 !important;
+            border-color: #2ba870 !important;
+        }
+        .btn-success:hover {
+            background-color: #21885a !important;
         }
     </style>
 </head>
@@ -51,7 +63,7 @@
         <aside class="sidebar p-3 d-flex flex-column justify-content-between">
             <div>
                 <div class="d-flex align-items-center mb-4 px-2 pt-2">
-                    <div class="bg-success text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px;">FC</div>
+                    <div class="bg-success text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px; background-color: #2ba870 !important;">FC</div>
                     <div>
                         <h6 class="fw-bold mb-0 text-white">FACSS CRM</h6>
                         <small class="text-muted" style="font-size: 0.75rem;">Intranet Enterprise</small>
@@ -90,7 +102,7 @@
             <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
-                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem;">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem; background-color: #2ba870 !important;">
                             {{ session.get('usuario_nome', 'FL')[0:2] | upper }}
                         </div>
                         <div style="line-height: 1.2;">
