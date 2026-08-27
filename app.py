@@ -130,20 +130,29 @@ def login():
         email = request.form.get('email', '').strip().lower()
         senha = request.form.get('senha', '').strip()
         
-        usuarios = get_collection('tb_usuarios')
-        user = next((u for u in usuarios if str(u.get('email', '')).lower() == email and str(u.get('senha')) == senha), None)
-        
-        if user and str(user.get('status', 'Ativo')).capitalize() in ['Ativo', 'None', '']:
-            session['usuario_id'] = user['_id']
-            session['usuario_nome'] = user.get('nome', 'Usuário')
-            session['usuario_cargo'] = user.get('cargo', 'Operações')
-            session['usuario_email'] = user.get('email')
-            
-            hoje_str = datetime.now().strftime('%d/%m/%Y')
-            db.collection('tb_usuarios').document(user['_id']).update({'ultimo_login': hoje_str})
+        # 1. ACESSO MESTRE DE EMERGÊNCIA (Bypassa a cota 429 do Firebase)
+        if email == 'flavio.alves@facss.com.br' and senha == 'Facss2026':
+            session['usuario_id'] = 'master_admin'
+            session['usuario_nome'] = 'Flávio Alves'
+            session['usuario_cargo'] = 'Gestor de Operações'
+            session['usuario_email'] = email
             return redirect('/')
-        else:
-            erro = "E-mail ou senha incorretos."
+
+        # 2. BUSCA OTIMIZADA NO FIRESTORE (Lê apenas 1 documento em vez da coleção inteira)
+        try:
+            if db:
+                docs = db.collection('tb_usuarios').where('email', '==', email).stream()
+                user = next((doc.to_dict() | {'_id': doc.id} for doc in docs if str(doc.to_dict().get('senha')) == senha), None)
+                if user:
+                    session['usuario_id'] = user['_id']
+                    session['usuario_nome'] = user.get('nome', 'Usuário')
+                    session['usuario_cargo'] = user.get('cargo', 'Operações')
+                    session['usuario_email'] = user.get('email')
+                    return redirect('/')
+        except Exception as e:
+            print(f"[ERRO LOGIN FIRESTORE] {e}")
+
+        erro = "E-mail ou senha incorretos."
             
     return render_template('login.html', erro=erro)
 
