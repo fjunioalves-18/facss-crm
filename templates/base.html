@@ -4,27 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FACSS CRM & Operações</title>
-    <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Chart.js para os gráficos do Dashboard -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #0b1311;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f1215;
+            color: #f8fafc;
             min-height: 100vh;
         }
         .sidebar {
             width: 260px;
-            background-color: #060d0b;
-            border-right: 1px solid #1a2e28;
+            background-color: #161b22;
+            border-right: 1px solid #21262d;
             min-height: 100vh;
         }
         .sidebar .nav-link {
-            color: #94a3b8;
+            color: #8b949e;
             padding: 10px 16px;
             border-radius: 8px;
             margin-bottom: 4px;
@@ -32,55 +28,36 @@
         }
         .sidebar .nav-link:hover {
             color: #ffffff;
-            background-color: rgba(43, 168, 112, 0.15);
+            background-color: #21262d;
         }
         .sidebar .nav-link.active {
-            color: #ffffff;
-            background-color: #2ba870 !important;
+            color: #ffffff !important;
+            background-color: #0d6efd !important;
         }
         .content-wrapper {
             flex: 1;
-            background-color: #0b1311;
+            background-color: #0f1215;
             overflow-y: auto;
         }
         .card {
-            background-color: #101c18 !important;
-            border: 1px solid #1a2e28 !important;
-            border-radius: 12px;
-        }
-        .table-dark {
-            --bs-table-bg: #101c18;
-            --bs-table-border-color: #1a2e28;
-        }
-        .badge {
-            font-weight: 600;
-            padding: 6px 10px;
-        }
-        .btn-success {
-            background-color: #2ba870;
-            border-color: #2ba870;
-        }
-        .btn-success:hover {
-            background-color: #21885a;
-            border-color: #21885a;
+            background-color: #161b22 !important;
+            border: 1px solid #21262d !important;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="d-flex">
-        <!-- SIDEBAR LATERAL -->
         <aside class="sidebar p-3 d-flex flex-column justify-content-between">
             <div>
-                <!-- LOGO FACSS -->
                 <div class="d-flex align-items-center mb-4 px-2 pt-2">
-                    <div class="bg-success text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px; background-color: #2ba870 !important;">FC</div>
+                    <div class="bg-success text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px;">FC</div>
                     <div>
                         <h6 class="fw-bold mb-0 text-white">FACSS CRM</h6>
                         <small class="text-muted" style="font-size: 0.75rem;">Intranet Enterprise</small>
                     </div>
                 </div>
 
-                <!-- MENU DE NAVEGAÇÃO -->
                 <ul class="nav nav-pills flex-column">
                     <li class="nav-item">
                         <a href="/" class="nav-link {% if active_tab == 'dashboard' or not active_tab %}active{% endif %}">
@@ -94,7 +71,7 @@
                     </li>
                     <li class="nav-item">
                         <a href="/pipeline" class="nav-link {% if active_tab == 'kanban' or active_tab == 'pipeline' %}active{% endif %}">
-                            <i class="bi bi-kanban me-2"></i> Pipeline de Vendas
+                            <i class="bi bi-kanban me-2"></i> Pipeline Kanban
                         </a>
                     </li>
                     <li class="nav-item">
@@ -102,19 +79,23 @@
                             <i class="bi bi-headset me-2"></i> Ordens de Serviço
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="/modulos" class="nav-link {% if active_tab == 'modulos' %}active{% endif %}">
+                            <i class="bi bi-cpu me-2"></i> Módulos Operacionais
+                        </a>
+                    </li>
                 </ul>
             </div>
 
-            <!-- USUÁRIO LOGADO -->
             <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
-                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem; background-color: #2ba870 !important;">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem;">
                             {{ session.get('usuario_nome', 'FL')[0:2] | upper }}
                         </div>
                         <div style="line-height: 1.2;">
                             <div class="fw-semibold text-white small">{{ session.get('usuario_nome', 'Flávio Alves') }}</div>
-                            <small class="text-muted" style="font-size: 0.7rem;">{{ session.get('usuario_cargo', 'Operações') }}</small>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ session.get('usuario_cargo', 'Gestor de Operações') }}</small>
                         </div>
                     </div>
                     <a href="/logout" class="text-danger ms-2" title="Sair"><i class="bi bi-box-arrow-right fs-5"></i></a>
@@ -122,13 +103,11 @@
             </div>
         </aside>
 
-        <!-- CONTEÚDO PRINCIPAL DAS PÁGINAS -->
         <main class="content-wrapper min-vh-100">
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
