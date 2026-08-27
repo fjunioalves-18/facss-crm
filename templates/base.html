@@ -3,94 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FACSS CRM - Intranet Enterprise</title>
+    <title>FACSS CRM & Operações</title>
+    <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Chart.js para os gráficos do Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #0b1311; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .sidebar { min-height: 100vh; background-color: #06110e; border-right: 1px solid rgba(255,255,255,0.08); width: 260px; }
-        .nav-link { color: #94a3b8; border-radius: 8px; margin-bottom: 4px; padding: 10px 14px; font-weight: 500; font-size: 14px; }
-        .nav-link:hover, .nav-link.active { background-color: #0f2d24; color: #2ba870; }
-        .main-content { flex: 1; background-color: #0b1311; min-height: 100vh; }
-        .card { background-color: #0f1c18; border: 1px solid rgba(255,255,255,0.08); }
+        body {
+            background-color: #0b1311;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background-color: #060d0b;
+            border-right: 1px solid #1a2e28;
+            min-height: 100vh;
+        }
+        .sidebar .nav-link {
+            color: #94a3b8;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .sidebar .nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(43, 168, 112, 0.15);
+        }
+        .sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #2ba870 !important;
+        }
+        .content-wrapper {
+            flex: 1;
+            background-color: #0b1311;
+            overflow-y: auto;
+        }
+        .card {
+            background-color: #101c18 !important;
+            border: 1px solid #1a2e28 !important;
+            border-radius: 12px;
+        }
+        .table-dark {
+            --bs-table-bg: #101c18;
+            --bs-table-border-color: #1a2e28;
+        }
+        .badge {
+            font-weight: 600;
+            padding: 6px 10px;
+        }
+        .btn-success {
+            background-color: #2ba870;
+            border-color: #2ba870;
+        }
+        .btn-success:hover {
+            background-color: #21885a;
+            border-color: #21885a;
+        }
     </style>
 </head>
 <body>
-<div class="d-flex">
-    <!-- MENU LATERAL -->
-    <div class="sidebar d-flex flex-column p-3">
-        <div class="d-flex align-items-center gap-2 mb-4 px-2">
-            <div class="bg-success rounded p-2 text-white fw-bold">FC</div>
+    <div class="d-flex">
+        <!-- SIDEBAR LATERAL -->
+        <aside class="sidebar p-3 d-flex flex-column justify-content-between">
             <div>
-                <h6 class="fw-bold mb-0 text-light" style="letter-spacing: 0.5px;">FACSS CRM</h6>
-                <small class="text-muted" style="font-size: 11px;">Intranet Enterprise</small>
-            </div>
-        </div>
-
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-                <a href="/" class="nav-link {% if active_tab == 'dash' %}active{% endif %}">
-                    <i class="bi bi-speedometer2 me-2"></i> Painel Geral
-                </a>
-            </li>
-            <li>
-                <a href="/clientes" class="nav-link {% if active_tab == 'clientes' %}active{% endif %}">
-                    <i class="bi bi-people me-2"></i> Clientes B2B
-                </a>
-            </li>
-            <li>
-                <a href="/pipeline" class="nav-link {% if active_tab == 'kanban' %}active{% endif %}">
-                    <i class="bi bi-kanban me-2"></i> Pipeline Kanban
-                </a>
-            </li>
-            <li>
-                <a href="/os" class="nav-link {% if active_tab == 'os' %}active{% endif %}">
-                    <i class="bi bi-headset me-2"></i> Ordens de Serviço
-                </a>
-            </li>
-            <li>
-                <a href="/modulos" class="nav-link {% if active_tab == 'modulos' %}active{% endif %}">
-                    <i class="bi bi-cpu me-2"></i> Módulos Operacionais
-                </a>
-            </li>
-        </ul>
-
-        <hr class="border-secondary border-opacity-25 my-3">
-
-        <!-- PERFIL DINÂMICO DO USUÁRIO LOGADO -->
-        <div class="d-flex align-items-center justify-content-between p-2 rounded bg-dark border border-secondary border-opacity-25 mt-auto">
-            <div class="d-flex align-items-center gap-2 overflow-hidden">
-                <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px; font-size: 12px;">
-                    {{ session.get('usuario_nome', 'US')[:2]|upper }}
-                </div>
-                <div class="lh-1 text-truncate">
-                    <span class="d-block fw-semibold text-light text-truncate mb-1" style="font-size: 13px;">{{ session.get('usuario_nome', 'Usuário') }}</span>
-                    <small class="text-muted text-truncate" style="font-size: 11px;">{{ session.get('usuario_cargo', 'Operações') }}</small>
-                </div>
-            </div>
-            <a href="/logout" class="btn btn-sm btn-link text-danger p-1 ms-1" title="Sair do Sistema"><i class="bi bi-box-arrow-right fs-5"></i></a>
-        </div>
-    </div>
-
-    <!-- CONTEÚDO PRINCIPAL -->
-    <div class="main-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="p-3 pb-0">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <!-- LOGO FACSS -->
+                <div class="d-flex align-items-center mb-4 px-2 pt-2">
+                    <div class="bg-success text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px; background-color: #2ba870 !important;">FC</div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-white">FACSS CRM</h6>
+                        <small class="text-muted" style="font-size: 0.75rem;">Intranet Enterprise</small>
                     </div>
-                {% endfor %}
                 </div>
-            {% endif %}
-        {% endwith %}
 
-        {% block content %}{% endblock %}
+                <!-- MENU DE NAVEGAÇÃO -->
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link {% if active_tab == 'dashboard' or not active_tab %}active{% endif %}">
+                            <i class="bi bi-grid-1x2 me-2"></i> Painel Geral
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/clientes" class="nav-link {% if active_tab == 'clientes' %}active{% endif %}">
+                            <i class="bi bi-building me-2"></i> Clientes B2B
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pipeline" class="nav-link {% if active_tab == 'kanban' or active_tab == 'pipeline' %}active{% endif %}">
+                            <i class="bi bi-kanban me-2"></i> Pipeline de Vendas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/os" class="nav-link {% if active_tab == 'os' %}active{% endif %}">
+                            <i class="bi bi-headset me-2"></i> Ordens de Serviço
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- USUÁRIO LOGADO -->
+            <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem; background-color: #2ba870 !important;">
+                            {{ session.get('usuario_nome', 'FL')[0:2] | upper }}
+                        </div>
+                        <div style="line-height: 1.2;">
+                            <div class="fw-semibold text-white small">{{ session.get('usuario_nome', 'Flávio Alves') }}</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ session.get('usuario_cargo', 'Operações') }}</small>
+                        </div>
+                    </div>
+                    <a href="/logout" class="text-danger ms-2" title="Sair"><i class="bi bi-box-arrow-right fs-5"></i></a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL DAS PÁGINAS -->
+        <main class="content-wrapper min-vh-100">
+            {% block content %}{% endblock %}
+        </main>
     </div>
-</div>
 
-<script href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
