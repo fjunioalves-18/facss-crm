@@ -3,7 +3,7 @@
 <div class="container-fluid p-4">
     <h4 class="fw-bold text-light mb-3">Painel de Comando (CRM)</h4>
 
-    {% if os_criticas > 0 or clientes_sem_contato > 0 %}
+    {% if clientes_sem_contato > 0 %}
     <div class="alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-25 text-warning mb-4 d-flex align-items-center rounded-3" role="alert">
         <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
         <div>
@@ -12,7 +12,7 @@
     </div>
     {% endif %}
 
-    <!-- CARDS KPI CORRIGIDOS -->
+    <!-- CARDS DE INDICADORES (KPIs) -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card p-3 border-start border-4 border-success shadow-sm">
@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    <!-- GRÁFICOS -->
+    <!-- GRÁFICOS DO PAINEL -->
     <div class="row g-4">
         <div class="col-md-6">
             <div class="card p-4 h-100">

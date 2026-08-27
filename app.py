@@ -29,20 +29,19 @@ db = firestore.client()
 # ==========================================
 # 2. CONFIGURAÇÃO DE E-MAIL
 # ==========================================
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
 EMAIL_EMPRESA = os.environ.get('EMAIL_EMPRESA', 'flavio.alves@facss.com.br')
 SENHA_EMPRESA_RAW = os.environ.get('SENHA_EMPRESA', 'cytf glim frms pqen')
 SENHA_EMPRESA = SENHA_EMPRESA_RAW.replace(" ", "").strip()
 
 # ==========================================
-# 3. FUNÇÕES DE ENVIO DE E-MAIL
+# 3. FUNÇÕES DE ENVIO DE E-MAIL (SSL PORTA 465)
 # ==========================================
 def enviar_email_html(destinatarios, assunto, corpo_html):
     if isinstance(destinatarios, str):
         destinatarios = [destinatarios]
     validos = [e for e in destinatarios if e and '@' in str(e).strip()]
     if not validos:
+        print("❌ [EMAIL] Nenhum destinatário válido informado.")
         return False
 
     try:
@@ -52,14 +51,15 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
         msg['Subject'] = assunto
         msg.attach(MIMEText(corpo_html, 'html'))
 
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
-        server.starttls()
+        # Conexão SSL direta na porta 465 (Compatível com Render)
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15)
         server.login(EMAIL_EMPRESA, SENHA_EMPRESA)
         server.send_message(msg)
         server.quit()
+        print(f"✅ [EMAIL] E-mail enviado com sucesso para: {validos}")
         return True
     except Exception as e:
-        print(f"[ERRO DISPARO E-MAIL] {e}")
+        print(f"❌ [ERRO DISPARO E-MAIL]: {e}")
         return False
 
 def disparar_email_boas_vindas(email, nome, senha):
