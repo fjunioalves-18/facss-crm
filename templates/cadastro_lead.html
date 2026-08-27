@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Reaproveita o estilo do cadastro anterior */
+    .card-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; }
+    .card-title { color: #1e1b4b; margin-bottom: 25px; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+    label { font-weight: 600; color: #475569; display: block; margin-top: 15px; font-size: 14px; }
+    select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    .btn-salvar { width: 100%; padding: 14px; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 25px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+</style>
+
+<div class="card-form">
+    <h2 class="card-title"><i class="fa-solid fa-bullseye" style="color: #10b981;"></i> Adicionar Novo Lead (Pipeline)</h2>
+    
+    <form action="/salvar_lead" method="POST">
+        <label>Nome do Lead / Empresa:</label>
+        <input type="text" name="empresa" required>
+
+        <div class="grid-2">
+            <div>
+                <label>Prioridade:</label>
+                <select name="prioridade">
+                    <option value="A">A - Alta</option>
+                    <option value="B">B - Média</option>
+                    <option value="C">C - Baixa</option>
+                </select>
+            </div>
+            <div>
+                <label>Segmento de Mercado:</label>
+                <input type="text" name="segmento" placeholder="Ex: Granel, Carga Geral...">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div>
+                <label>Canal de Entrada:</label>
+                <input type="text" name="canal" placeholder="Ex: LinkedIn, Indicação...">
+            </div>
+            <div>
+                <label>Estágio Atual:</label>
+                <select name="estagio">
+                    <option value="Lead">Lead</option>
+                    <option value="Contato feito">Contato feito</option>
+                    <option value="Diagnóstico agendado">Diagnóstico agendado</option>
+                    <option value="Proposta enviada">Proposta enviada</option>
+                    <option value="Negociação">Negociação</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Próxima Ação (Follow-up):</label>
+        <input type="text" name="proxima" placeholder="Ex: Enviar proposta na terça">
+
+        <button type="submit" class="btn-salvar">Inserir no Pipeline</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .card-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; }
+    .card-title { color: #1e1b4b; margin-bottom: 25px; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+    label { font-weight: 600; color: #475569; display: block; margin-top: 15px; font-size: 14px; }
+    select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    .btn-salvar { width: 100%; padding: 14px; background-color: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 25px; }
+    
+    .demanda-box { background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+</style>
+
+<div class="card-form">
+    <h2 class="card-title"><i class="fa-solid fa-clipboard-check" style="color: #16a34a;"></i> Atendimento de Chamado (OS)</h2>
+    
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px;">
+        <div>
+            <span style="font-size: 12px; color: #64748b;">Ordem de Serviço:</span>
+            <h3 style="color: #0f172a;">#{{ os[1] }}</h3>
+        </div>
+        <div style="text-align: right;">
+            <span style="font-size: 12px; color: #64748b;">Cliente:</span>
+            <h3 style="color: #0f172a;">{{ os[2] or 'Não Vinculado' }}</h3>
+        </div>
+    </div>
+
+    <!-- O que o cliente pediu (Leitura apenas) -->
+    <div class="demanda-box">
+        <label style="margin-top: 0; color: #92400e; font-size: 12px;">Descrição da Demanda Solicitada:</label>
+        <p style="color: #b45309; font-size: 14px; margin-top: 5px; line-height: 1.5;">{{ os[3] }}</p>
+    </div>
+
+    <form action="/atualizar_os" method="POST">
+        <input type="hidden" name="id_os" value="{{ os[0] }}">
+
+        <label>Status do Atendimento:</label>
+        <select name="status">
+            <option value="Aberto" {% if os[5] == 'Aberto' %}selected{% endif %}>Aberto</option>
+            <option value="Em Andamento" {% if os[5] == 'Em Andamento' %}selected{% endif %}>Em Andamento</option>
+            <option value="CONCLUÍDO" {% if os[5] == 'CONCLUÍDO' or os[5] == 'FINALIZADO' %}selected{% endif %}>CONCLUÍDO (FINALIZADO)</option>
+        </select>
+
+        <label>Solução Aplicada / Comentários do Analista:</label>
+        <textarea name="solucao" rows="5" placeholder="Descreva o que foi feito para resolver o chamado..." required>{{ os[4] if os[4] != 'None' and os[4] != None else '' }}</textarea>
+
+        <button type="submit" class="btn-salvar">Gravar Atendimento</button>
+        <a href="/os" style="display: block; text-align: center; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 14px;">Cancelar e Voltar</a>
+    </form>
+</div>
+{% endblock %}

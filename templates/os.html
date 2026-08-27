@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-light mb-1">🎧 Gestão de Chamados (OS)</h3>
+            <p class="text-muted small mb-0">Controle de solicitações operacionais e atendimentos técnicos.</p>
+        </div>
+        <a href="/nova_os" class="btn btn-success fw-semibold"><i class="bi bi-plus-lg me-1"></i> Nova OS</a>
+    </div>
+
+    <!-- BARRA DE FILTROS E CLASSIFICAÇÃO COMPLETA -->
+    <div class="card bg-dark border-secondary border-opacity-25 mb-4">
+        <div class="card-body p-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label text-muted small mb-1">Buscar</label>
+                    <input type="text" id="filtroTexto" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="🔍 N° OS, Cliente, Solicitante..." onkeyup="filtrarTabela()">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small mb-1">Criticidade</label>
+                    <select id="filtroCriticidade" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="filtrarTabela()">
+                        <option value="">Todas</option>
+                        <option value="URGENTE">Urgente 🚨</option>
+                        <option value="ALTA">Alta / Crítica</option>
+                        <option value="MÉDIA">Média</option>
+                        <option value="BAIXA">Baixa</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small mb-1">Status</label>
+                    <select id="filtroStatus" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="filtrarTabela()">
+                        <option value="">Todos</option>
+                        <option value="ABERTO">Aberto</option>
+                        <option value="EM ANDAMENTO">Em Andamento</option>
+                        <option value="ATENDIDO">Atendido / Finalizado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small mb-1">Data De</label>
+                    <input type="date" id="filtroDataInicio" class="form-control form-control-sm bg-dark text-light border-secondary" onchange="filtrarTabela()">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small mb-1">Data Até</label>
+                    <input type="date" id="filtroDataFim" class="form-control form-control-sm bg-dark text-light border-secondary" onchange="filtrarTabela()">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-sm btn-outline-secondary w-100 mt-4" onclick="limparFiltros()" title="Limpar Filtros"><i class="bi bi-x-circle"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABELA DE ORDENS DE SERVIÇO -->
+    <div class="card bg-dark border-secondary border-opacity-25">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0" id="tabelaOS">
+                <thead>
+                    <tr class="text-muted small text-uppercase">
+                        <th>N° DA OS</th>
+                        <th>CLIENTE B2B</th>
+                        <th>SOLICITANTE</th>
+                        <th>DESCRIÇÃO DA DEMANDA</th>
+                        <th>CRITICIDADE</th>
+                        <th>STATUS</th>
+                        <th class="text-end">AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ordens %}
+                    <tr data-data="{{ item[8] or '' }}">
+                        <td class="fw-bold text-success">#{{ item[1] }}</td>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[3] }}</td>
+                        <td class="text-truncate" style="max-width: 250px;">{{ item[7] }}</td>
+                        <td>
+                            {% if 'URGENTE' in item[4]|upper %}
+                                <span class="badge bg-danger text-white border border-light fw-bold text-uppercase">URGENTE 🚨</span>
+                            {% elif 'ALTA' in item[4]|upper or 'CRÍTICA' in item[4]|upper %}
+                                <span class="badge bg-danger text-uppercase">{{ item[4] }}</span>
+                            {% elif 'MÉDIA' in item[4]|upper %}
+                                <span class="badge bg-warning text-dark text-uppercase">{{ item[4] }}</span>
+                            {% else %}
+                                <span class="badge bg-info text-dark text-uppercase">{{ item[4] or 'BAIXA' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if 'ATENDIDO' in item[6]|upper or 'CONCLUÍDO' in item[6]|upper %}
+                                <span class="badge bg-success-subtle text-success border border-success border-opacity-25">ATENDIDO</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25">ABERTO</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="/atender_os/{{ item[0] }}" class="btn btn-sm btn-outline-light me-1" title="Atender/Editar"><i class="bi bi-pencil"></i></a>
+                            <a href="/os/imprimir/{{ item[0] }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir PDF"><i class="bi bi-printer"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function filtrarTabela() {
+    let texto = document.getElementById("filtroTexto").value.toLowerCase();
+    let criticidade = document.getElementById("filtroCriticidade").value.toLowerCase();
+    let status = document.getElementById("filtroStatus").value.toLowerCase();
+    let dtInicio = document.getElementById("filtroDataInicio").value;
+    let dtFim = document.getElementById("filtroDataFim").value;
+
+    let linhas = document.querySelectorAll("#tabelaOS tbody tr");
+
+    linhas.forEach(linha => {
+        let conteudo = linha.innerText.toLowerCase();
+        let dataLinha = linha.getAttribute("data-data") || "";
+
+        let atendeTexto = conteudo.includes(texto);
+        let atendeCriticidade = criticidade === "" || conteudo.includes(criticidade);
+        let atendeStatus = status === "" || conteudo.includes(status);
+        
+        let atendeData = true;
+        if (dtInicio && dataLinha && dataLinha < dtInicio) atendeData = false;
+        if (dtFim && dataLinha && dataLinha > dtFim) atendeData = false;
+
+        linha.style.display = (atendeTexto && atendeCriticidade && atendeStatus && atendeData) ? "" : "none";
+    });
+}
+
+function limparFiltros() {
+    document.getElementById("filtroTexto").value = "";
+    document.getElementById("filtroCriticidade").value = "";
+    document.getElementById("filtroStatus").value = "";
+    document.getElementById("filtroDataInicio").value = "";
+    document.getElementById("filtroDataFim").value = "";
+    filtrarTabela();
+}
+</script>
+{% endblock %}

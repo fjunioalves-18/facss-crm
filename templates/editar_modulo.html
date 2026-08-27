@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .card-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; }
+    .card-title { color: #1e1b4b; margin-bottom: 25px; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+    label { font-weight: 600; color: #475569; display: block; margin-top: 15px; font-size: 14px; }
+    select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    .btn-salvar { width: 100%; padding: 14px; background-color: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 25px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+</style>
+
+<div class="card-form">
+    <h2 class="card-title"><i class="fa-solid fa-pen-to-square" style="color: #4f46e5;"></i> Editar / Desativar Módulo</h2>
+    
+    <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+        <span style="font-size: 12px; color: #64748b;">Veículo / Placa:</span>
+        <h3 style="color: #0f172a; margin: 5px 0;">{{ modulo[1] }}</h3>
+        <span style="font-size: 12px; color: #64748b;">ID Equipamento: {{ modulo[4] or 'Não informado' }}</span>
+    </div>
+
+    <form action="/atualizar_modulo" method="POST">
+        <input type="hidden" name="id_modulo" value="{{ modulo[0] }}">
+
+        <div class="grid-2">
+            <div>
+                <label>Placa do Veículo:</label>
+                <input type="text" name="placa" value="{{ modulo[1] }}" required>
+            </div>
+            <div>
+                <label>ID do Módulo (Hardware):</label>
+                <input type="text" name="id_modulo_equip" value="{{ modulo[4] or '' }}">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div><label>Marca:</label><input type="text" name="marca" value="{{ modulo[2] or '' }}"></div>
+            <div><label>Modelo:</label><input type="text" name="modelo" value="{{ modulo[3] or '' }}"></div>
+        </div>
+
+        <label>Cliente / Empresa Vinculada:</label>
+        <select name="id_cliente">
+            <option value="">-- Estoque / Não Vinculado --</option>
+            {% for c in clientes %}
+                <option value="{{ c[0] }}" {% if c[0] == modulo[5] %}selected{% endif %}>{{ c[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="grid-2">
+            <div><label>Operadora Chip (M2M):</label><input type="text" name="chip" value="{{ modulo[6] or '' }}"></div>
+            <div><label>Número do Chip (Linha):</label><input type="text" name="num_chip" value="{{ modulo[7] or '' }}"></div>
+        </div>
+
+        <div class="grid-2">
+            <div><label>Data de Instalação:</label><input type="date" name="data_instalacao" value="{{ modulo[8] or '' }}"></div>
+            <div><label>Data de Desativação:</label><input type="date" name="data_desativacao" value="{{ modulo[9] or '' }}"></div>
+        </div>
+
+        <label>Situação do Módulo:</label>
+        <select name="situacao">
+            <option value="ATIVO" {% if modulo[10] == 'ATIVO' %}selected{% endif %}>ATIVO</option>
+            <option value="ATIVO SEM VEÍCULO" {% if 'VEÍCU' in modulo[10]|upper or 'VEICU' in modulo[10]|upper %}selected{% endif %}>ATIVO SEM VEÍCULO</option>
+            <option value="INATIVO" {% if modulo[10] == 'INATIVO' %}selected{% endif %}>INATIVO</option>
+        </select>
+
+        <button type="submit" class="btn-salvar">Atualizar Módulo</button>
+        <a href="/modulos" style="display: block; text-align: center; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 14px;">Cancelar e Voltar</a>
+    </form>
+</div>
+{% endblock %}

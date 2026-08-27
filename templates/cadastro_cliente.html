@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .card-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; }
+    .card-title { color: #1e1b4b; margin-bottom: 25px; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+    label { font-weight: 600; color: #475569; display: block; margin-top: 15px; font-size: 14px; }
+    select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    .btn-salvar { width: 100%; padding: 14px; background-color: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 25px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+</style>
+
+<div class="card-form">
+    <h2 class="card-title"><i class="fa-solid fa-building" style="color: #4f46e5;"></i> Cadastrar Novo Cliente</h2>
+    
+    <form action="/salvar_cliente" method="POST">
+        <label>Nome da Empresa (Razão Social):</label>
+        <input type="text" name="nome" required>
+
+        <div class="grid-2">
+            <div><label>CNPJ:</label><input type="text" name="cnpj"></div>
+            <div><label>Telefone:</label><input type="text" name="telefone"></div>
+        </div>
+
+        <label>Nome do Contato Principal:</label>
+        <input type="text" name="contato">
+
+        <div class="grid-2">
+            <div>
+                <label>Status Atual:</label>
+                <select name="status" required>
+                    <option value="Ativo">Ativo</option>
+                    <option value="Período de teste">Período de teste</option>
+                    <option value="Proposta comercial">Proposta comercial</option>
+                    <option value="Inativo">Inativo</option>
+                </select>
+            </div>
+            <div>
+                <label>Health Score (Saúde):</label>
+                <select name="health">
+                    <option value="🟢 Saudável">🟢 Saudável</option>
+                    <option value="🟡 Atenção">🟡 Atenção</option>
+                    <option value="🔴 Risco">🔴 Risco</option>
+                    <option value="⚪ Sem dados">⚪ Sem dados</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Responsável na FACSS:</label>
+        <input type="text" name="responsavel" placeholder="Ex: Diego, Guilherme...">
+
+        <button type="submit" class="btn-salvar">Salvar Cliente na Base</button>
+    </form>
+</div>
+{% endblock %}

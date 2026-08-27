@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .modulo-inativo {
+        text-decoration: line-through;
+        opacity: 0.55;
+    }
+</style>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-truck-monster" style="color: var(--brand-green); margin-right: 8px;"></i> Gestão de Frota & Módulos Operacionais</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Placa tratada e padrão de identificador destrinchado.</p>
+        </div>
+        <a href="/novo_modulo" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Módulo/Veículo</a>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Placa (Limpa)</th>
+                <th>Padrão Identificador</th>
+                <th>Marca / Modelo</th>
+                <th>ID Módulo Equip.</th>
+                <th>Cliente Vinculado</th>
+                <th>Situação</th>
+                <th style="text-align: right;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in modulos %}
+            <tr class="{% if m.situacao == 'INATIVO' %}modulo-inativo{% endif %}">
+                <td><strong style="font-size: 14px; color: var(--brand-green);">{{ m.placa_limpa }}</strong></td>
+                <td><span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">{{ m.padrao_identificador }}</span></td>
+                <td>{{ m.marca_modelo }}</td>
+                <td><span style="font-family: monospace; color: var(--text-muted);">{{ m.id_equip }}</span></td>
+                <td><strong>{{ m.cliente }}</strong></td>
+                <td>
+                    <span class="badge {% if m.situacao == 'ATIVO' %}badge-concluida{% else %}badge-aberta{% endif %}">
+                        {{ m.situacao }}
+                    </span>
+                </td>
+                <td style="text-align: right;">
+                    <a href="/editar_modulo/{{ m.id }}" style="color: var(--brand-green); font-size: 15px;"><i class="fa-solid fa-pen-to-square"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

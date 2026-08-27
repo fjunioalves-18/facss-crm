@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACSS CRM • Acesso ao Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-main: #06110e;
+            --bg-card: #0f221e;
+            --border-color: rgba(43, 168, 112, 0.25);
+            --brand-green: #2ba870;
+            --brand-gold: #c49b66;
+            --text-main: #f1f5f9;
+            --text-muted: #829a92;
+            --input-bg: #081714;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+
+        .login-card { width: 100%; max-width: 440px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 35px 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .brand-header { text-align: center; margin-bottom: 25px; }
+        .logo-icon { width: 55px; height: 55px; margin-bottom: 8px; }
+        .brand-name { font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: 1px; }
+        .brand-slogan { font-size: 11.5px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
+
+        .tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 22px; }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); font-weight: 700; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: var(--brand-green); border-bottom-color: var(--brand-green); }
+
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+        
+        input, select {
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13.5px;
+            outline: none;
+            width: 100%;
+            transition: 0.2s;
+        }
+        input:focus { border-color: var(--brand-green); box-shadow: 0 0 10px rgba(43, 168, 112, 0.2); }
+
+        .btn { width: 100%; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(135deg, var(--brand-green) 0%, #1f855b 100%); color: white; box-shadow: 0 4px 15px rgba(43, 168, 112, 0.3); margin-top: 8px; }
+        .btn-primary:hover { transform: translateY(-1px); }
+
+        .forgot-link { display: block; text-align: right; font-size: 12px; color: var(--brand-gold); text-decoration: none; margin-top: -6px; margin-bottom: 16px; font-weight: 600; }
+        .forgot-link:hover { text-decoration: underline; }
+
+        .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 18px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .alert-danger { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+        .alert-success { background: rgba(43, 168, 112, 0.15); color: var(--brand-green); border: 1px solid rgba(43, 168, 112, 0.3); }
+
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 99; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 400px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-header">
+            <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="25" y="12" width="60" height="12" rx="6" transform="rotate(45 25 12)" fill="#333d47"/>
+                <rect x="15" y="38" width="42" height="12" rx="6" transform="rotate(45 15 38)" fill="#333d47"/>
+                <circle cx="21" cy="78" r="6" fill="#c49b66"/>
+                <path d="M 82 18 L 60 38 L 82 58" fill="none" stroke="#2ba870" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="brand-name">FACSS CRM</div>
+            <div class="brand-slogan">Portal Operacional & Intranet Enterprise</div>
+        </div>
+
+        {% if erro %}
+        <div class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation"></i> {{ erro }}</div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}"><i class="fa-solid fa-circle-check"></i> {{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabEntrarBtn" onclick="switchTab('entrar')">Entrar</button>
+            <button class="tab-btn" id="tabPrimeiroBtn" onclick="switchTab('primeiro')">Primeiro Acesso</button>
+        </div>
+
+        <!-- FORMULARIO DE LOGIN -->
+        <form action="/login" method="POST" id="formEntrar">
+            <div class="form-group">
+                <label>E-mail Corporativo</label>
+                <input type="email" name="email" placeholder="seu.nome@facss.com.br" required>
+            </div>
+            <div class="form-group">
+                <label>Senha de Acesso</label>
+                <input type="password" name="senha" placeholder="••••••••" required>
+            </div>
+            <a href="javascript:void(0)" class="forgot-link" onclick="openForgotModal()">Esqueci minha senha</a>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema</button>
+        </form>
+
+        <!-- FORMULARIO DE PRIMEIRO ACESSO -->
+        <form action="/primeiro_acesso" method="POST" id="formPrimeiro" style="display: none;">
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" placeholder="Seu nome e sobrenome" required>
+            </div>
+            <div class="form-group">
+                <label>E-mail Corporativo</label>
+                <input type="email" name="email" placeholder="seu.nome@facss.com.br" required>
+            </div>
+            <div class="form-group">
+                <label>Definir Nova Senha</label>
+                <input type="password" name="senha" placeholder="Mínimo 6 caracteres" required>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Criar Meu Acesso</button>
+        </form>
+    </div>
+
+    <!-- MODAL ESQUECI MINHA SENHA -->
+    <div class="modal-overlay" id="modalForgot">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <strong style="font-size: 16px; color: var(--text-main);">Recuperação de Senha</strong>
+                <button onclick="closeForgotModal()" style="background:none; border:none; color: var(--text-muted); font-size: 18px; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 15px;">Informe seu e-mail cadastrado para receber as instruções de redefinição de senha.</p>
+            <form action="/recuperar_senha" method="POST">
+                <div class="form-group">
+                    <label>E-mail Corporativo</label>
+                    <input type="email" name="email" placeholder="seu.nome@facss.com.br" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 5px;">Enviar E-mail de Recuperação</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(type) {
+            if (type === 'entrar') {
+                document.getElementById('formEntrar').style.display = 'block';
+                document.getElementById('formPrimeiro').style.display = 'none';
+                document.getElementById('tabEntrarBtn').classList.add('active');
+                document.getElementById('tabPrimeiroBtn').classList.remove('active');
+            } else {
+                document.getElementById('formEntrar').style.display = 'none';
+                document.getElementById('formPrimeiro').style.display = 'block';
+                document.getElementById('tabPrimeiroBtn').classList.add('active');
+                document.getElementById('tabEntrarBtn').classList.remove('active');
+            }
+        }
+
+        function openForgotModal() {
+            document.getElementById('modalForgot').style.display = 'flex';
+        }
+
+        function closeForgotModal() {
+            document.getElementById('modalForgot').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

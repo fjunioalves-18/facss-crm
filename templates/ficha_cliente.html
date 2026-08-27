@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .grid-ficha { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; }
+    .card-info { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; height: fit-content; }
+    .card-timeline { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+    
+    .timeline-item { border-left: 3px solid #818cf8; padding-left: 15px; margin-bottom: 20px; position: relative; }
+    .timeline-item::before { content: ''; width: 10px; height: 10px; background: #4f46e5; border-radius: 50%; position: absolute; left: -6px; top: 2px; }
+    
+    .tag-tipo { font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 4px; background: #e0e7ff; color: #3730a3; display: inline-block; margin-bottom: 5px; }
+    label { font-weight: 600; color: #475569; display: block; margin-top: 10px; font-size: 13px; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+    .btn-registrar { width: 100%; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+    
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin-top: 10px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; color: #475569; }
+    code { background: #f1f5f9; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+    .strikethrough-row { text-decoration: line-through; opacity: 0.65; }
+</style>
+
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <a href="/clientes" style="color: #64748b; text-decoration: none; font-size: 14px;"><i class="fa-solid fa-arrow-left"></i> Voltar para a Carteira</a>
+        <h1 style="color: #1e1b4b; margin-top: 5px; font-size: 26px;">{{ cliente[1] }}</h1>
+    </div>
+    <div>
+        <a href="/editar_cliente/{{ cliente[0] }}" style="padding: 8px 16px; background: #312e81; color: white; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold;"><i class="fa-solid fa-pen"></i> Editar Status</a>
+    </div>
+</div>
+
+<div class="grid-ficha">
+    <!-- COLUNA ESQUERDA: DADOS DO CLIENTE & FROTA -->
+    <div>
+        <div class="card-info" style="margin-bottom: 20px;">
+            <h3 style="color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-circle-info" style="color: #4f46e5;"></i> Detalhes da Conta</h3>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>CNPJ:</strong> {{ cliente[2] or 'Não informado' }}</p>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>Contato:</strong> {{ cliente[3] or 'Sem nome' }}</p>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>Telefone:</strong> {{ cliente[4] or 'Sem telefone' }}</p>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>E-mail:</strong> {{ cliente[5] or 'Sem e-mail' }}</p>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>Responsável:</strong> {{ cliente[8] or 'Sem responsável' }}</p>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>Status:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">{{ cliente[6] }}</span></p>
+            <p style="margin-bottom: 8px; font-size: 13px;"><strong>Saúde:</strong> {{ cliente[9] }}</p>
+        </div>
+
+        <!-- TABELA DE FROTA DO CLIENTE -->
+        <div class="card-info">
+            <h3 style="color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px;"><i class="fa-solid fa-truck-monster" style="color: #818cf8;"></i> Frota & Módulos Cadastrados</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Veículo</th>
+                        <th>ID Módulo</th>
+                        <th>Chip / Nº</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in modulos %}
+                    <tr class="{% if m[9] and ('INATIVO' in m[9]|upper or 'VEÍCU' in m[9]|upper or 'VEICU' in m[9]|upper) %}strikethrough-row{% endif %}">
+                        <td><strong>{{ m[1] }}</strong></td>
+                        <td>{{ m[2] or '' }} {{ m[3] or '' }}</td>
+                        <td><code>{{ m[4] or '-' }}</code></td>
+                        <td>{{ m[5] or '-' }} {% if m[6] %}<br><span style="color: #64748b; font-size: 10px;">{{ m[6] }}</span>{% endif %}</td>
+                        <td style="font-weight: bold; font-size: 10px;">{{ m[9] }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not modulos %}
+                    <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">Nenhum veículo/módulo cadastrado para este cliente.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- COLUNA DIREITA: HISTÓRICO & NOVO REGISTRO -->
+    <div class="card-timeline">
+        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+            <h4 style="color: #1e1b4b; margin-bottom: 10px;"><i class="fa-solid fa-plus-circle" style="color: #10b981;"></i> Registrar Nova Interação</h4>
+            <form action="/salvar_interacao" method="POST">
+                <input type="hidden" name="id_cliente" value="{{ cliente[0] }}">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Tipo de Contato:</label>
+                        <select name="tipo">
+                            <option value="Reunião">Reunião</option>
+                            <option value="Ligação / WhatsApp">Ligação / WhatsApp</option>
+                            <option value="Treinamento">Treinamento</option>
+                            <option value="Suporte Tecnico">Suporte Técnico</option>
+                            <option value="E-mail">E-mail</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Responsável:</label>
+                        <input type="text" name="responsavel" value="{{ cliente[8] or '' }}" placeholder="Seu nome" required>
+                    </div>
+                </div>
+                <label>Resumo do Contato:</label>
+                <textarea name="observacao" rows="3" placeholder="Escreva o resumo da conversa..." required></textarea>
+                <label>Próximo Passo (Follow-up):</label>
+                <input type="text" name="proximo_passo" placeholder="Ex: Retornar dia 15 para fechar proposta">
+                <button type="submit" class="btn-registrar">Salvar no Histórico do Cliente</button>
+            </form>
+        </div>
+
+        <h3 style="color: #0f172a; margin-bottom: 20px;"><i class="fa-solid fa-clock-rotate-left" style="color: #f59e0b;"></i> Linha do Tempo de Interações</h3>
+        {% for i in interacoes %}
+        <div class="timeline-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="tag-tipo">{{ i[3] }}</span>
+                <span style="font-size: 11px; color: #94a3b8; font-weight: bold;">{{ i[1] }}</span>
+            </div>
+            <p style="font-size: 13px; color: #334155; margin: 6px 0; line-height: 1.4;">{{ i[4] }}</p>
+            <div style="font-size: 11px; color: #64748b;">
+                <strong>Resp:</strong> {{ i[2] }} 
+                {% if i[5] and i[5] != 'None' %} | <span style="color: #b45309;"><strong>Próximo passo:</strong> {{ i[5] }}</span>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% if not interacoes %}
+        <p style="text-align: center; color: #94a3b8; padding: 20px; font-style: italic;">Nenhuma interação registrada até o momento.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

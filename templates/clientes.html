@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-address-book" style="color: var(--brand-green); margin-right: 8px;"></i> Carteira de Clientes B2B</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Gestão de empresas ativas, responsáveis e relacionamento.</p>
+        </div>
+        <a href="/novo_cliente" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Novo Cliente</a>
+    </div>
+
+    <!-- BUSCA DE CLIENTE -->
+    <form method="GET" action="/clientes" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Pesquisar por Nome, CNPJ ou Responsável..." style="flex: 1;">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+        {% if busca %}
+        <a href="/clientes" class="btn" style="background: var(--border-color); color: var(--text-main);">Limpar</a>
+        {% endif %}
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Cliente / CNPJ</th>
+                <th>Contato / Telefone</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Health Score (Saúde)</th>
+                <th style="text-align: right;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in clientes %}
+            <tr>
+                <td>
+                    <strong style="display: block; color: var(--text-main);">{{ c[1] }}</strong>
+                    <span style="font-size: 11px; color: var(--text-muted);">{{ c[2] or 'CNPJ não informado' }}</span>
+                </td>
+                <td>
+                    <span style="display: block; color: var(--text-main);">{{ c[3] or '-' }}</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">{{ c[4] or '-' }}</span>
+                </td>
+                <td><strong>{{ c[7] or 'Não definido' }}</strong></td>
+                <td><span class="badge badge-concluida">{{ c[5] }}</span></td>
+                <td>
+                    {% if 'Saudável' in c[6] or '' == c[6] %}
+                    <span style="color: var(--brand-green); font-weight: 700; font-size: 12px;"><i class="fa-solid fa-circle"></i> Saudável</span>
+                    {% elif 'Atenção' in c[6] %}
+                    <span style="color: var(--brand-gold); font-weight: 700; font-size: 12px;"><i class="fa-solid fa-circle"></i> Atenção</span>
+                    {% else %}
+                    <span style="color: #f43f5e; font-weight: 700; font-size: 12px;"><i class="fa-solid fa-circle"></i> Risco</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+                    <a href="/cliente/{{ c[0] }}" style="color: var(--brand-gold); font-size: 15px;" title="Ver Ficha"><i class="fa-solid fa-folder-open"></i></a>
+                    <a href="/editar_cliente/{{ c[0] }}" style="color: var(--brand-green); font-size: 15px;" title="Editar Cliente"><i class="fa-solid fa-pen-to-square"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

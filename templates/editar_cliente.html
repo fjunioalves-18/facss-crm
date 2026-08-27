@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;" class="card">
+    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--text-main);"><i class="fa-solid fa-user-pen" style="color: var(--brand-green); margin-right: 8px;"></i> Editar Cadastro do Cliente B2B</h3>
+
+    <form action="/atualizar_cliente" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="id_cliente" value="{{ cliente[0] }}">
+
+        <div>
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Nome da Empresa</label>
+            <input type="text" name="nome" value="{{ cliente[1] }}" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">CNPJ</label>
+                <input type="text" name="cnpj" value="{{ cliente[2] }}">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Contato Principal</label>
+                <input type="text" name="contato" value="{{ cliente[3] }}">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Telefone</label>
+                <input type="text" name="telefone" value="{{ cliente[4] }}">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">E-mail</label>
+                <input type="email" name="email" value="{{ cliente[5] }}">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Status da Conta</label>
+                <select name="status">
+                    <option value="Ativo" {% if cliente[6] == 'Ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="Inativo" {% if cliente[6] == 'Inativo' %}selected{% endif %}>Inativo</option>
+                    <option value="Periodo de teste" {% if cliente[6] == 'Periodo de teste' %}selected{% endif %}>Período de Teste</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Health Score</label>
+                <select name="health">
+                    <option value="Saudável" {% if 'Saudável' in cliente[8] or '' == cliente[8] %}selected{% endif %}>Saudável</option>
+                    <option value="Atenção" {% if 'Atenção' in cliente[8] %}selected{% endif %}>Atenção</option>
+                    <option value="Risco" {% if 'Risco' in cliente[8] %}selected{% endif %}>Risco</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block;">Responsável</label>
+                <input type="text" name="responsavel" value="{{ cliente[7] }}">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">Salvar Alterações</button>
+            <a href="/clientes" class="btn" style="background: var(--border-color); color: var(--text-main);">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

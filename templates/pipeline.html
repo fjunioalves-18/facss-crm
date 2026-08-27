@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .panel { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+    th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 12px; }
+    
+    .prio-A { color: #ef4444; font-weight: bold; font-size: 16px; }
+    .prio-B { color: #f59e0b; font-weight: bold; font-size: 16px; }
+    .prio-C { color: #10b981; font-weight: bold; font-size: 16px; }
+</style>
+
+<div class="panel">
+    <div class="panel-header">
+        <h2 style="color: #1e1b4b; font-size: 22px;"><i class="fa-solid fa-filter-circle-dollar" style="color: #10b981;"></i> Pipeline de Vendas (Novos Leads)</h2>
+        <!-- BOTÃO ADICIONADO AQUI -->
+        <a href="/novo_lead" style="padding: 10px 20px; background-color: #10b981; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;"><i class="fa-solid fa-plus"></i> Novo Lead</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="text-align: center;">Prioridade</th>
+                <th>Empresa (Lead)</th>
+                <th>Segmento</th>
+                <th>Decisor / Canal</th>
+                <th>Estágio Atual</th>
+                <th>Próxima Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr>
+                <td style="text-align: center;">
+                    <span class="{% if lead[1] == 'A' %}prio-A{% elif lead[1] == 'B' %}prio-B{% else %}prio-C{% endif %}" title="Prioridade {{ lead[1] }}">
+                        {{ lead[1] }}
+                    </span>
+                </td>
+                <td><strong>{{ lead[2] }}</strong></td>
+                <td>{{ lead[3] }}</td>
+                <td>{{ lead[4] }}<br><span style="color: #64748b; font-size: 11px;">Via: {{ lead[5] }}</span></td>
+                <td><span style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">{{ lead[6] }}</span></td>
+                <td style="color: #475569; font-style: italic;">{{ lead[7] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

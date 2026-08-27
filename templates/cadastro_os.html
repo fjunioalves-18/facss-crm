@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid p-4" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-light mb-1">➕ Abertura de Nova OS</h3>
+            <p class="text-muted small mb-0">Cadastre o chamado operacional definindo o motivo e a criticidade.</p>
+        </div>
+        <a href="/os" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+    </div>
+
+    <div class="card bg-dark border-secondary border-opacity-25 p-4">
+        <form action="/salvar_os" method="POST">
+            <input type="hidden" name="numero_os" value="{{ num_os }}">
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label text-light fw-semibold">Cliente B2B *</label>
+                    <select name="id_cliente" class="form-select bg-dark text-light border-secondary" required>
+                        <option value="">Selecione o Cliente...</option>
+                        {% for c in clientes %}
+                            <option value="{{ c[0] }}">{{ c[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-light fw-semibold">Solicitante *</label>
+                    <input type="text" name="solicitante" class="form-control bg-dark text-light border-secondary" placeholder="Nome do solicitante no cliente" required>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label text-light fw-semibold">Motivo do Chamado *</label>
+                    <select name="motivo" class="form-select bg-dark text-light border-secondary" required>
+                        <option value="">Selecione o Motivo...</option>
+                        <option value="Suporte Técnico">Suporte Técnico</option>
+                        <option value="Telemetria / Rastreador">Telemetria / Rastreador</option>
+                        <option value="Dúvida / Treinamento">Dúvida / Treinamento</option>
+                        <option value="Relatório / Dados">Relatório / Dados</option>
+                        <option value="Manutenção de Equipamento">Manutenção de Equipamento</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-light fw-semibold">Criticidade / Urgência *</label>
+                    <select name="criticidade" class="form-select bg-dark text-light border-secondary" required>
+                        <option value="BAIXA">Baixa</option>
+                        <option value="MÉDIA">Média</option>
+                        <option value="ALTA">Alta</option>
+                        <option value="URGENTE">Urgente 🚨</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-light fw-semibold">Analista Responsável</label>
+                    <select name="analista" class="form-select bg-dark text-light border-secondary">
+                        <option value="">Aguardando Atribuição</option>
+                        {% for a in analistas %}
+                            <option value="{{ a[0] }}">{{ a[0] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-light fw-semibold">Descrição Detalhada da Demanda *</label>
+                <textarea name="descricao" class="form-control bg-dark text-light border-secondary" rows="4" placeholder="Descreva detalhadamente o problema ou solicitação..." required></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a href="/os" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-success fw-semibold"><i class="bi bi-check-lg me-1"></i> Abrir Ordem de Serviço</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
