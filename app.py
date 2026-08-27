@@ -1,14 +1,3 @@
-Toda a razão, Flavio — cortei sem querer rotas essenciais do seu código original, como a ficha detalhada do cliente, interações, gestão completa de módulos e a impressão de OS em PDF.
-
-Peguei exatamente a sua base de 491 linhas e apliquei apenas os **4 ajustes cirúrgicos** necessários para resolver os problemas do Render e do envio de e-mails sem apagar nenhuma funcionalidade:
-
-* **Tratamento da Senha SMTP:** Adicionado `.replace(" ", "").strip()` em `SENHA_EMPRESA` para remover os espaços da senha de app de 16 letras do Google (`cytf glim frms pqen`), destravando o envio dos e-mails.
-* **Compatibilidade do Firebase no Render:** Leitura flexível das credenciais no caminho `/etc/secrets/firebase_credentials.json` caso o arquivo esteja nas Secret Files do servidor.
-* **Alias para Rota do Pipeline:** Inclusão da rota `@app.route('/pipeline_kanban')` sobre o `@app.route('/pipeline')` para evitar erros 404 ao clicar no menu lateral.
-* **Leitura da Porta Dinâmica:** Ajuste na execução final com `os.environ.get('PORT', 5000)` para o Render inicializar a aplicação na porta correta da nuvem.
-
-Aqui está o seu **`app.py` 100% completo e preservado**:
-
 ```python
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 import firebase_admin
@@ -34,7 +23,7 @@ if not firebase_admin._apps:
         cred = credentials.Certificate(cred_path)
         firebase_admin.initialize_app(cred)
     else:
-        print(f"[AVISO FIREBASE] Credenciais não encontradas em: {cred_path}")
+        print(f"❌ [ERRO] Credenciais do Firebase não encontradas em: {cred_path}")
 
 db = firestore.client()
 
