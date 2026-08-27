@@ -22,7 +22,7 @@ if not firebase_admin._apps:
         cred = credentials.Certificate(cred_path)
         firebase_admin.initialize_app(cred)
     else:
-        print(f"❌ [ERRO] Credenciais do Firebase não encontradas em: {cred_path}")
+        print(f"[AVISO FIREBASE] Credenciais não encontradas em: {cred_path}")
 
 db = firestore.client()
 

@@ -4,20 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FACSS CRM & Operações</title>
+    <!-- Bootstrap 5.3 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --facss-green: #2ba870;
+            --facss-green-hover: #21885a;
+            --facss-bg: #0b1311;
+            --facss-sidebar: #060d0b;
+            --facss-card: #101c18;
+            --facss-border: #1a2e28;
+        }
         body {
-            background-color: #0b1311;
+            background-color: var(--facss-bg);
             color: #e2e8f0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
         }
         .sidebar {
             width: 260px;
-            background-color: #060d0b;
-            border-right: 1px solid #1a2e28;
+            background-color: var(--facss-sidebar);
+            border-right: 1px solid var(--facss-border);
             min-height: 100vh;
         }
         .sidebar .nav-link {
@@ -26,6 +35,7 @@
             border-radius: 8px;
             margin-bottom: 4px;
             font-weight: 500;
+            transition: all 0.2s ease;
         }
         .sidebar .nav-link:hover {
             color: #ffffff;
@@ -33,46 +43,70 @@
         }
         .sidebar .nav-link.active {
             color: #ffffff !important;
-            background-color: #2ba870 !important;
+            background-color: var(--facss-green) !important;
+            box-shadow: 0 4px 12px rgba(43, 168, 112, 0.3);
         }
         .content-wrapper {
             flex: 1;
-            background-color: #0b1311;
+            background-color: var(--facss-bg);
             overflow-y: auto;
         }
         .card {
-            background-color: #101c18 !important;
-            border: 1px solid #1a2e28 !important;
+            background-color: var(--facss-card) !important;
+            border: 1px solid var(--facss-border) !important;
             border-radius: 12px;
         }
         .table-dark {
-            --bs-table-bg: #101c18;
-            --bs-table-border-color: #1a2e28;
+            --bs-table-bg: var(--facss-card);
+            --bs-table-border-color: var(--facss-border);
         }
-        .btn-success {
-            background-color: #2ba870 !important;
-            border-color: #2ba870 !important;
+        /* Padronização dos Botões na Identidade Verde FACSS */
+        .btn-primary, .btn-success {
+            background-color: var(--facss-green) !important;
+            border-color: var(--facss-green) !important;
+            color: #ffffff !important;
         }
-        .btn-success:hover {
-            background-color: #21885a !important;
+        .btn-primary:hover, .btn-success:hover {
+            background-color: var(--facss-green-hover) !important;
+            border-color: var(--facss-green-hover) !important;
+        }
+        .btn-outline-primary, .btn-outline-success {
+            color: var(--facss-green) !important;
+            border-color: var(--facss-green) !important;
+        }
+        .btn-outline-primary:hover, .btn-outline-success:hover {
+            background-color: var(--facss-green) !important;
+            color: #ffffff !important;
+        }
+        .form-control, .form-select {
+            background-color: #060d0b !important;
+            border-color: var(--facss-border) !important;
+            color: #e2e8f0 !important;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--facss-green) !important;
+            box-shadow: 0 0 0 0.25rem rgba(43, 168, 112, 0.25) !important;
         }
     </style>
 </head>
 <body>
     <div class="d-flex">
+        <!-- SIDEBAR -->
         <aside class="sidebar p-3 d-flex flex-column justify-content-between">
             <div>
+                <!-- LOGO FACSS -->
                 <div class="d-flex align-items-center mb-4 px-2 pt-2">
-                    <div class="bg-success text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px; background-color: #2ba870 !important;">FC</div>
+                    <div class="text-white fw-bold rounded-3 d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 40px; height: 40px; background-color: var(--facss-green);">FC</div>
                     <div>
-                        <h6 class="fw-bold mb-0 text-white">FACSS CRM</h6>
-                        <small class="text-muted" style="font-size: 0.75rem;">Intranet Enterprise</small>
+                        <h6 class="fw-bold mb-0 text-white" style="letter-spacing: 0.5px;">FACSS CRM</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Intranet Enterprise</small>
                     </div>
                 </div>
 
+                <!-- MENU COMPLETO -->
                 <ul class="nav nav-pills flex-column">
                     <li class="nav-item">
-                        <a href="/" class="nav-link {% if active_tab == 'dashboard' or not active_tab %}active{% endif %}">
+                        <a href="/" class="nav-link {% if active_tab == 'dash' or active_tab == 'dashboard' or not active_tab %}active{% endif %}">
                             <i class="bi bi-grid-1x2 me-2"></i> Painel Geral
                         </a>
                     </li>
@@ -99,15 +133,16 @@
                 </ul>
             </div>
 
+            <!-- USUÁRIO LOGADO -->
             <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
-                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem; background-color: #2ba870 !important;">
+                        <div class="text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px; font-size: 0.85rem; background-color: var(--facss-green);">
                             {{ session.get('usuario_nome', 'FL')[0:2] | upper }}
                         </div>
                         <div style="line-height: 1.2;">
                             <div class="fw-semibold text-white small">{{ session.get('usuario_nome', 'Flávio Alves') }}</div>
-                            <small class="text-muted" style="font-size: 0.7rem;">{{ session.get('usuario_cargo', 'Gestor de Operações') }}</small>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ session.get('usuario_cargo', 'Analista / Operações') }}</small>
                         </div>
                     </div>
                     <a href="/logout" class="text-danger ms-2" title="Sair"><i class="bi bi-box-arrow-right fs-5"></i></a>
@@ -115,6 +150,7 @@
             </div>
         </aside>
 
+        <!-- CONTEÚDO PRINCIPAL -->
         <main class="content-wrapper min-vh-100">
             {% block content %}{% endblock %}
         </main>
