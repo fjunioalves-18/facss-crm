@@ -12,6 +12,15 @@ from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'facss_crm_chave_secreta_super_segura')
 
+import socket
+
+# Força o Python a usar apenas conexões IPv4 no Render (Elimina o erro Errno 101)
+old_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4(*args, **kwargs):
+    responses = old_getaddrinfo(*args, **kwargs)
+    return [r for r in responses if r[0] == socket.AF_INET]
+socket.getaddrinfo = getaddrinfo_ipv4
+
 # ==========================================
 # 1. INICIALIZAÇÃO FIREBASE CLOUD FIRESTORE
 # ==========================================
@@ -43,16 +52,11 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
     if isinstance(destinatarios, str):
         destinatarios = [destinatarios]
     validos = [e for e in destinatarios if e and '@' in str(e).strip()]
-    
     if not validos:
         print("❌ [EMAIL] Nenhum destinatário válido informado.")
         return False
 
-    # Limpeza rigorosa da Senha de Aplicativo do Gmail (remove todos os espaços)
     senha_limpa = SENHA_EMPRESA.replace(" ", "").strip()
-
-    print(f"📧 [EMAIL] Iniciando tentativa de envio para: {validos}")
-    print(f"📧 [EMAIL] Remetente: {EMAIL_EMPRESA}")
 
     try:
         msg = MIMEMultipart()
@@ -61,22 +65,17 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
         msg['Subject'] = assunto
         msg.attach(MIMEText(corpo_html, 'html'))
 
-        # Conexão SSL direta na porta 465
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12)
+        # Conexão SMTP via porta 587 sobre IPv4
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
+        server.starttls()
         server.login(EMAIL_EMPRESA, senha_limpa)
         server.send_message(msg)
         server.quit()
-        
-        print(f"✅ [EMAIL SUCCESS] E-mail entregue com sucesso para: {validos}")
+        print(f"✅ [EMAIL] E-mail entregue com sucesso para: {validos}")
         return True
-    except smtplib.SMTPAuthenticationError as auth_err:
-        print(f"❌ [ERRO GMAIL AUTH]: Senha de Aplicativo recusada pelo Google. Detalhes: {auth_err}")
-        return False
     except Exception as e:
-        print(f"❌ [ERRO GMAIL CONEXAO]: {e}")
-        print(traceback.format_exc())
+        print(f"❌ [ERRO EMAIL]: {e}")
         return False
-
 
 # ROTA DE TESTE DIRETO (Para testar sem precisar criar OS)
 @app.route('/test_email')
