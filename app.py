@@ -56,27 +56,36 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
         print("❌ [EMAIL] Nenhum destinatário válido informado.")
         return False
 
-    senha_limpa = SENHA_EMPRESA.replace(" ", "").strip()
-
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = f"FACSS CRM <{EMAIL_EMPRESA}>"
-        msg['To'] = ", ".join(validos)
-        msg['Subject'] = assunto
-        msg.attach(MIMEText(corpo_html, 'html'))
-
-        # Conexão SMTP via porta 587 sobre IPv4
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
-        server.starttls()
-        server.login(EMAIL_EMPRESA, senha_limpa)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ [EMAIL] E-mail entregue com sucesso para: {validos}")
-        return True
-    except Exception as e:
-        print(f"❌ [ERRO EMAIL]: {e}")
+    api_key = os.environ.get('BREVO_API_KEY', '').strip()
+    if not api_key:
+        print("❌ [EMAIL] Variável BREVO_API_KEY não configurada no Render.")
         return False
 
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+    
+    payload = {
+        "sender": {"name": "FACSS CRM", "email": EMAIL_EMPRESA},
+        "to": [{"email": e} for e in validos],
+        "subject": assunto,
+        "htmlContent": corpo_html
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        if response.status_code in [200, 201]:
+            print(f"✅ [EMAIL SUCCESS] E-mail entregue com sucesso via API para: {validos}")
+            return True
+        else:
+            print(f"❌ [ERRO API BREVO]: Status {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ [ERRO REQUISICAO EMAIL]: {e}")
+        return False
 # ROTA DE TESTE DIRETO (Para testar sem precisar criar OS)
 @app.route('/test_email')
 def teste_email_direto():
