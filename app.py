@@ -34,15 +34,25 @@ SENHA_EMPRESA_RAW = os.environ.get('SENHA_EMPRESA', 'cytf glim frms pqen')
 SENHA_EMPRESA = SENHA_EMPRESA_RAW.replace(" ", "").strip()
 
 # ==========================================
-# 3. FUNÇÕES DE ENVIO DE E-MAIL (SSL PORTA 465)
+import traceback
+
+# ==========================================
+# 3. FUNÇÕES DE ENVIO DE E-MAIL & TESTE
 # ==========================================
 def enviar_email_html(destinatarios, assunto, corpo_html):
     if isinstance(destinatarios, str):
         destinatarios = [destinatarios]
     validos = [e for e in destinatarios if e and '@' in str(e).strip()]
+    
     if not validos:
         print("❌ [EMAIL] Nenhum destinatário válido informado.")
         return False
+
+    # Limpeza rigorosa da Senha de Aplicativo do Gmail (remove todos os espaços)
+    senha_limpa = SENHA_EMPRESA.replace(" ", "").strip()
+
+    print(f"📧 [EMAIL] Iniciando tentativa de envio para: {validos}")
+    print(f"📧 [EMAIL] Remetente: {EMAIL_EMPRESA}")
 
     try:
         msg = MIMEMultipart()
@@ -51,16 +61,31 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
         msg['Subject'] = assunto
         msg.attach(MIMEText(corpo_html, 'html'))
 
-        # Conexão SSL direta na porta 465 (Compatível com Render)
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15)
-        server.login(EMAIL_EMPRESA, SENHA_EMPRESA)
+        # Conexão SSL direta na porta 465
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12)
+        server.login(EMAIL_EMPRESA, senha_limpa)
         server.send_message(msg)
         server.quit()
-        print(f"✅ [EMAIL] E-mail enviado com sucesso para: {validos}")
+        
+        print(f"✅ [EMAIL SUCCESS] E-mail entregue com sucesso para: {validos}")
         return True
-    except Exception as e:
-        print(f"❌ [ERRO DISPARO E-MAIL]: {e}")
+    except smtplib.SMTPAuthenticationError as auth_err:
+        print(f"❌ [ERRO GMAIL AUTH]: Senha de Aplicativo recusada pelo Google. Detalhes: {auth_err}")
         return False
+    except Exception as e:
+        print(f"❌ [ERRO GMAIL CONEXAO]: {e}")
+        print(traceback.format_exc())
+        return False
+
+
+# ROTA DE TESTE DIRETO (Para testar sem precisar criar OS)
+@app.route('/test_email')
+def teste_email_direto():
+    sucesso = disparar_email_boas_vindas(EMAIL_EMPRESA, "Flávio Alves (Teste)", "123456")
+    if sucesso:
+        return f"<h2 style='color:green;'>✅ E-mail enviado com sucesso para {EMAIL_EMPRESA}! Cheque sua caixa de entrada e Spam.</h2>"
+    else:
+        return "<h2 style='color:red;'>❌ Falha no disparo! Abra a aba LOGS no painel do Render para ver a causa exata.</h2>"
 
 def disparar_email_boas_vindas(email, nome, senha):
     corpo = f"""
