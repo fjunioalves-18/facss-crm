@@ -3,7 +3,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import smtplib
-import socket
 import time
 import traceback
 
@@ -17,19 +16,8 @@ app.secret_key = os.environ.get(
     'SECRET_KEY', 'facss_crm_chave_secreta_super_segura'
 )
 
-# Força o Python a usar apenas conexões IPv4 no Render (Elimina o erro Errno 101)
-old_getaddrinfo = socket.getaddrinfo
-
-
-def getaddrinfo_ipv4(*args, **kwargs):
-  responses = old_getaddrinfo(*args, **kwargs)
-  return [r for r in responses if r[0] == socket.AF_INET]
-
-
-socket.getaddrinfo = getaddrinfo_ipv4
-
 # ==========================================
-# 1. INICIALIZAÇÃO SEGURA DO FIREBASE FIRESTORE
+# 1. INICIALIZAÇÃO SEGURA DO FIREBASE CLOUD FIRESTORE
 # ==========================================
 cred_path = (
     '/etc/secrets/firebase_credentials.json'
@@ -40,18 +28,17 @@ cred_path = (
 db = None
 
 try:
-  if not firebase_admin._apps:
-    if os.path.exists(cred_path):
+  if os.path.exists(cred_path):
+    if not firebase_admin._apps:
       cred = credentials.Certificate(cred_path)
       firebase_admin.initialize_app(cred)
-      db = firestore.client()
-      print(f'✅ [FIREBASE] Inicializado com sucesso via {cred_path}')
-    else:
-      print(f'⚠️ [AVISO FIREBASE] Credenciais não encontradas em: {cred_path}')
-  else:
     db = firestore.client()
+    print(f'✅ [FIREBASE] Conectado via {cred_path}')
+  else:
+    print(f'⚠️ [AVISO FIREBASE] Credencial não encontrada em: {cred_path}')
 except Exception as e:
   print(f'❌ [ERRO INICIALIZACAO FIREBASE]: {e}')
+  db = None
 
 # ==========================================
 # 2. CONFIGURAÇÃO DE E-MAIL (BREVO API)
@@ -64,12 +51,10 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
     destinatarios = [destinatarios]
   validos = [e for e in destinatarios if e and '@' in str(e).strip()]
   if not validos:
-    print('❌ [EMAIL] Nenhum destinatário válido informado.')
     return False
 
   api_key = os.environ.get('BREVO_API_KEY', '').strip()
   if not api_key:
-    print('❌ [EMAIL] Variável BREVO_API_KEY não configurada no Render.')
     return False
 
   url = 'https://api.brevo.com/v3/smtp/email'
@@ -87,39 +72,11 @@ def enviar_email_html(destinatarios, assunto, corpo_html):
   }
 
   try:
-    response = requests.post(url, json=payload, headers=headers, timeout=10)
-    if response.status_code in [200, 201]:
-      print(
-          f'✅ [EMAIL SUCCESS] E-mail entregue com sucesso via API para:'
-          f' {validos}'
-      )
-      return True
-    else:
-      print(
-          f'❌ [ERRO API BREVO]: Status {response.status_code} -'
-          f' {response.text}'
-      )
-      return False
+    response = requests.post(url, json=payload, headers=headers, timeout=5)
+    return response.status_code in [200, 201]
   except Exception as e:
-    print(f'❌ [ERRO REQUISICAO EMAIL]: {e}')
+    print(f'❌ [ERRO EMAIL]: {e}')
     return False
-
-
-@app.route('/test_email')
-def teste_email_direto():
-  sucesso = disparar_email_boas_vindas(
-      EMAIL_EMPRESA, 'Flávio Alves (Teste)', '123456'
-  )
-  if sucesso:
-    return (
-        f"<h2 style='color:green;'>✅ E-mail enviado com sucesso para"
-        f' {EMAIL_EMPRESA}! Cheque sua caixa de entrada e Spam.</h2>'
-    )
-  else:
-    return (
-        "<h2 style='color:red;'>❌ Falha no disparo! Abra a aba LOGS no painel"
-        ' do Render para ver a causa exata.</h2>'
-    )
 
 
 def disparar_email_boas_vindas(email, nome, senha):
@@ -174,18 +131,17 @@ def disparar_email_recuperacao(email, nome, senha):
 
 def get_collection(col_name):
   if not db:
-    print(f'⚠️ [AVISO FIRESTORE] DB não disponível para buscar {col_name}')
     return []
   try:
-    docs = db.collection(col_name).stream()
+    docs = db.collection(col_name).get(retry=None, timeout=5)
     return [doc.to_dict() | {'_id': doc.id} for doc in docs]
   except Exception as e:
-    print(f'❌ [ERRO FIRESTORE] Falha ao buscar coleção {col_name}: {e}')
+    print(f'❌ [ERRO FIRESTORE] {col_name}: {e}')
     return []
 
 
 # ==========================================
-# 3. AUTENTICAÇÃO E SESSÃO DINÂMICA
+# 3. AUTENTICAÇÃO E SESSÃO
 # ==========================================
 @app.before_request
 def verificar_login():
@@ -201,7 +157,6 @@ def login():
     email = request.form.get('email', '').strip().lower()
     senha = request.form.get('senha', '').strip()
 
-    # 1. ACESSO MESTRE DE EMERGÊNCIA (Acesso Garantido)
     if email == 'flavio.alves@facss.com.br' and senha == 'Facss2026':
       session['usuario_id'] = 'master_admin'
       session['usuario_nome'] = 'Flávio Alves'
@@ -209,26 +164,22 @@ def login():
       session['usuario_email'] = email
       return redirect('/')
 
-    # 2. BUSCA NO FIRESTORE SE O BANCO ESTIVER DISPONÍVEL
-    try:
-      if db:
-        docs = db.collection('tb_usuarios').where('email', '==', email).stream()
-        user = next(
-            (
-                doc.to_dict() | {'_id': doc.id}
-                for doc in docs
-                if str(doc.to_dict().get('senha')) == senha
-            ),
-            None,
-        )
-        if user:
-          session['usuario_id'] = user['_id']
-          session['usuario_nome'] = user.get('nome', 'Usuário')
-          session['usuario_cargo'] = user.get('cargo', 'Operações')
-          session['usuario_email'] = user.get('email')
-          return redirect('/')
-    except Exception as e:
-      print(f'[ERRO LOGIN FIRESTORE] {e}')
+    usuarios = get_collection('tb_usuarios')
+    user = next(
+        (
+            u
+            for u in usuarios
+            if str(u.get('email', '')).lower() == email
+            and str(u.get('senha', '')) == senha
+        ),
+        None,
+    )
+    if user:
+      session['usuario_id'] = user['_id']
+      session['usuario_nome'] = user.get('nome', 'Usuário')
+      session['usuario_cargo'] = user.get('cargo', 'Operações')
+      session['usuario_email'] = user.get('email')
+      return redirect('/')
 
     erro = 'E-mail ou senha incorretos.'
 
@@ -243,11 +194,7 @@ def primeiro_acesso():
 
   usuarios = get_collection('tb_usuarios')
   if any(str(u.get('email', '')).lower() == email for u in usuarios):
-    flash(
-        'Este e-mail já possui cadastro. Faça login ou solicite recuperação de'
-        ' senha.',
-        'danger',
-    )
+    flash('Este e-mail já possui cadastro.', 'danger')
     return redirect('/login')
 
   if db:
@@ -266,10 +213,10 @@ def primeiro_acesso():
           'ultimo_login': hoje_str,
       })
     except Exception as e:
-      print(f'[ERRO PRIMEIRO ACESSO FIRESTORE] {e}')
+      print(f'[ERRO NOVO USUARIO] {e}')
 
   disparar_email_boas_vindas(email, nome, senha)
-  flash(f'Conta criada com sucesso, {nome}! Você já pode acessar.', 'success')
+  flash(f'Conta criada com sucesso, {nome}!', 'success')
   return redirect('/login')
 
 
@@ -285,9 +232,9 @@ def recuperar_senha():
     disparar_email_recuperacao(
         email, user.get('nome', 'Usuário'), user.get('senha', '---')
     )
-    flash('Instruções de recuperação enviadas para o seu e-mail!', 'success')
+    flash('Instruções enviadas para o e-mail!', 'success')
   else:
-    flash('E-mail não encontrado na base de dados.', 'danger')
+    flash('E-mail não encontrado.', 'danger')
 
   return redirect('/login')
 
@@ -303,92 +250,74 @@ def logout():
 # ==========================================
 @app.route('/')
 def home():
-  try:
-    clientes = get_collection('tb_clientes')
-    pipeline = get_collection('tb_pipeline')
-    ordens = get_collection('tb_os')
+  clientes = get_collection('tb_clientes')
+  pipeline = get_collection('tb_pipeline')
+  ordens = get_collection('tb_os')
 
-    total_ativos = sum(1 for c in clientes if c.get('status') == 'Ativo')
-    total_atencao = sum(
-        1
-        for c in clientes
-        if 'Atenção' in str(c.get('health_score'))
-        or 'Risco' in str(c.get('health_score'))
-    )
-    total_leads = len(pipeline)
-    os_abertas = sum(
-        1
-        for o in ordens
-        if str(o.get('status_os')).upper()
-        not in ['FINALIZADO', 'CONCLUÍDO', 'ATENDIDO']
-    )
+  total_ativos = sum(1 for c in clientes if c.get('status') == 'Ativo')
+  total_atencao = sum(
+      1
+      for c in clientes
+      if 'Atenção' in str(c.get('health_score'))
+      or 'Risco' in str(c.get('health_score'))
+  )
+  total_leads = len(pipeline)
+  os_abertas = sum(
+      1
+      for o in ordens
+      if str(o.get('status_os')).upper()
+      not in ['FINALIZADO', 'CONCLUÍDO', 'ATENDIDO']
+  )
 
-    cnt_saudavel = sum(
-        1 for c in clientes if 'Saudável' in str(c.get('health_score'))
-    )
-    cnt_atencao = sum(
-        1 for c in clientes if 'Atenção' in str(c.get('health_score'))
-    )
-    cnt_risco = sum(
-        1 for c in clientes if 'Risco' in str(c.get('health_score'))
-    )
-    cnt_semdados = len(clientes) - (cnt_saudavel + cnt_atencao + cnt_risco)
+  cnt_saudavel = sum(
+      1 for c in clientes if 'Saudável' in str(c.get('health_score'))
+  )
+  cnt_atencao = sum(
+      1 for c in clientes if 'Atenção' in str(c.get('health_score'))
+  )
+  cnt_risco = sum(1 for c in clientes if 'Risco' in str(c.get('health_score')))
+  cnt_semdados = len(clientes) - (cnt_saudavel + cnt_atencao + cnt_risco)
 
-    analistas_dict = {}
-    for o in ordens:
-      an = o.get('analista')
-      if an:
-        analistas_dict[an] = analistas_dict.get(an, 0) + 1
+  analistas_dict = {}
+  for o in ordens:
+    an = o.get('analista')
+    if an:
+      analistas_dict[an] = analistas_dict.get(an, 0) + 1
 
-    labels_analistas = list(analistas_dict.keys())[:5]
-    qtd_analistas = [analistas_dict[k] for k in labels_analistas]
+  labels_analistas = list(analistas_dict.keys())[:5]
+  qtd_analistas = [analistas_dict[k] for k in labels_analistas]
 
-    os_criticas = sum(
-        1
-        for o in ordens
-        if 'Alta' in str(o.get('criticidade'))
-        and str(o.get('status_os')).upper()
-        not in ['FINALIZADO', 'CONCLUÍDO', 'ATENDIDO']
-    )
-    data_limite = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
-    clientes_sem_contato = sum(
-        1
-        for c in clientes
-        if c.get('status') == 'Ativo'
-        and (
-            not c.get('ultima_interacao')
-            or str(c.get('ultima_interacao')) < data_limite
-        )
-    )
+  os_criticas = sum(
+      1
+      for o in ordens
+      if 'Alta' in str(o.get('criticidade'))
+      and str(o.get('status_os')).upper()
+      not in ['FINALIZADO', 'CONCLUÍDO', 'ATENDIDO']
+  )
+  data_limite = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+  clientes_sem_contato = sum(
+      1
+      for c in clientes
+      if c.get('status') == 'Ativo'
+      and (
+          not c.get('ultima_interacao')
+          or str(c.get('ultima_interacao')) < data_limite
+      )
+  )
 
-    return render_template(
-        'index.html',
-        total_ativos=total_ativos,
-        total_atencao=total_atencao,
-        total_leads=total_leads,
-        os_abertas=os_abertas,
-        os_criticas=os_criticas,
-        clientes_sem_contato=clientes_sem_contato,
-        health_chart=[cnt_saudavel, cnt_atencao, cnt_risco, cnt_semdados],
-        labels_analistas=labels_analistas,
-        qtd_analistas=qtd_analistas,
-        active_tab='dash',
-    )
-  except Exception as e:
-    print(f'❌ [ERRO HOME]: {e}')
-    return render_template(
-        'index.html',
-        total_ativos=0,
-        total_atencao=0,
-        total_leads=0,
-        os_abertas=0,
-        os_criticas=0,
-        clientes_sem_contato=0,
-        health_chart=[0, 0, 0, 0],
-        labels_analistas=[],
-        qtd_analistas=[],
-        active_tab='dash',
-    )
+  return render_template(
+      'index.html',
+      total_ativos=total_ativos,
+      total_atencao=total_atencao,
+      total_leads=total_leads,
+      os_abertas=os_abertas,
+      os_criticas=os_criticas,
+      clientes_sem_contato=clientes_sem_contato,
+      health_chart=[cnt_saudavel, cnt_atencao, cnt_risco, cnt_semdados],
+      labels_analistas=labels_analistas,
+      qtd_analistas=qtd_analistas,
+      active_tab='dash',
+  )
 
 
 @app.route('/clientes')
@@ -453,7 +382,7 @@ def editar_cliente(id):
   c = {}
   if db:
     try:
-      doc = db.collection('tb_clientes').document(str(id)).get()
+      doc = db.collection('tb_clientes').document(str(id)).get(timeout=5)
       if doc.exists:
         c = doc.to_dict()
     except Exception as e:
@@ -510,7 +439,7 @@ def ficha_cliente(id):
   c = {}
   if db:
     try:
-      doc = db.collection('tb_clientes').document(str(id)).get()
+      doc = db.collection('tb_clientes').document(str(id)).get(timeout=5)
       if doc.exists:
         c = doc.to_dict()
     except Exception as e:
@@ -657,7 +586,7 @@ def editar_modulo(id):
   modulo = {}
   if db:
     try:
-      doc = db.collection('tb_modulos').document(str(id)).get()
+      doc = db.collection('tb_modulos').document(str(id)).get(timeout=5)
       modulo = doc.to_dict() | {'_id': doc.id} if doc.exists else {}
     except Exception as e:
       print(f'[ERRO EDITAR MODULO] {e}')
@@ -768,7 +697,7 @@ def mover_lead(id, direcao):
           'Negociação',
       ]
       doc_ref = db.collection('tb_pipeline').document(str(id))
-      doc = doc_ref.get()
+      doc = doc_ref.get(timeout=5)
       if doc.exists:
         estagio_atual = doc.to_dict().get('estagio', 'Lead')
         idx = ordem.index(estagio_atual)
@@ -856,7 +785,9 @@ def salvar_os():
   c_email, c_nome = None, 'Cliente'
   if db and id_cliente:
     try:
-      cliente_doc = db.collection('tb_clientes').document(str(id_cliente)).get()
+      cliente_doc = (
+          db.collection('tb_clientes').document(str(id_cliente)).get(timeout=5)
+      )
       if cliente_doc.exists:
         c_email = cliente_doc.to_dict().get('email')
         c_nome = cliente_doc.to_dict().get('nome_empresa')
@@ -906,7 +837,7 @@ def atender_os(id):
   o = {}
   if db:
     try:
-      doc = db.collection('tb_os').document(str(id)).get()
+      doc = db.collection('tb_os').document(str(id)).get(timeout=5)
       if doc.exists:
         o = doc.to_dict()
     except Exception as e:
@@ -916,7 +847,9 @@ def atender_os(id):
   if db and o.get('id_cliente'):
     try:
       c_doc = (
-          db.collection('tb_clientes').document(str(o.get('id_cliente'))).get()
+          db.collection('tb_clientes')
+          .document(str(o.get('id_cliente')))
+          .get(timeout=5)
       )
       if c_doc.exists:
         c_nome = c_doc.to_dict().get('nome_empresa', 'Cliente Indefinido')
@@ -955,7 +888,7 @@ def imprimir_os(id):
   o = {}
   if db:
     try:
-      doc = db.collection('tb_os').document(str(id)).get()
+      doc = db.collection('tb_os').document(str(id)).get(timeout=5)
       if doc.exists:
         o = doc.to_dict()
     except Exception as e:
@@ -965,7 +898,9 @@ def imprimir_os(id):
   if db and o.get('id_cliente'):
     try:
       c_doc = (
-          db.collection('tb_clientes').document(str(o.get('id_cliente'))).get()
+          db.collection('tb_clientes')
+          .document(str(o.get('id_cliente')))
+          .get(timeout=5)
       )
       if c_doc.exists:
         c_nome = c_doc.to_dict().get('nome_empresa', 'Cliente Indefinido')
